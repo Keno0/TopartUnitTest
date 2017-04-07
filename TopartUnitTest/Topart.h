@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 #define NINF INT_MIN
-#define READ_DATA_FROM_FILE 1
+#define READ_DATA_FROM_FILE 0
 using namespace std;
 
 // Graph is represented using adjacency list. Every node of adjacency list
@@ -19,8 +19,10 @@ class AdjListNode
 {
 	int v;
 	int weight;
+	bool isItComp;
 public:
-	AdjListNode(int _v, int _w);
+	AdjListNode(int _v, int _w, int isItComp);
+	int getIsItComp();
 	int getV();
 	int getWeight();
 };
@@ -47,10 +49,14 @@ class Graph
 	void printAllPathsUtil(int, int, bool[], int[], int &);
 public:
 	int compCounter = 0;
+	int compIndex = 0;
+	int finalCompIndex = 0;
+	int *startPointsOfComps;
+	int *finalStartPointsOfComps;
 	int V; // No. of vertices’
 
 				  // function to add an edge to graph
-	void addEdge(int u, int v, int weight);
+	void addEdge(int u, int v, int weight, int isItComp);
 
 	// Finds longest distances from given source vertex
 	void printAllPaths(int s, int d);

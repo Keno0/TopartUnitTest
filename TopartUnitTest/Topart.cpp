@@ -11,10 +11,11 @@
 
 using namespace std;
 
-AdjListNode::AdjListNode(int _v, int _w)
+AdjListNode::AdjListNode(int _v, int _w, int isItComp)
 {
 	v = _v;
 	weight = _w;
+	this->isItComp = isItComp;
 }
 
 int AdjListNode::getV()
@@ -22,6 +23,10 @@ int AdjListNode::getV()
 	return v;
 }
 
+int AdjListNode::getIsItComp()
+{
+	return isItComp;
+}
 int AdjListNode::getWeight()
 {
 	return weight;
@@ -72,9 +77,9 @@ void Graph::Init()
 	}
 }
 
-void Graph::addEdge(int u, int v, int weight)
+void Graph::addEdge(int u, int v, int weight, int isItComp)
 {
-	AdjListNode node(v, weight);
+	AdjListNode node(v, weight, isItComp);
 	adj[u].push_back(node); // Add v to u’s list
 }
 
@@ -123,7 +128,15 @@ void Graph::printAllPathsUtil(int u, int d, bool visited[],
 			{
 				bestPath[i] = path[i];
 			}
+
+			finalCompIndex = compIndex;
+			for (int i = 0; i < finalCompIndex; i++)
+			{
+				finalStartPointsOfComps[i] = startPointsOfComps[i];
+			}
 		}
+
+		
 	}
 	else // If current vertex is not destination
 	{
@@ -134,9 +147,21 @@ void Graph::printAllPathsUtil(int u, int d, bool visited[],
 		{
 			if (!visited[i->getV()])
 			{
-				distance += i->getWeight();
-				printAllPathsUtil(i->getV(), d, visited, path, path_index);
-				distance -= i->getWeight();
+				if (i->getIsItComp())
+				{
+					startPointsOfComps[compIndex] = u;
+					compIndex++;
+					distance += i->getWeight();
+					printAllPathsUtil(i->getV(), d, visited, path, path_index);
+					distance -= i->getWeight();
+					compIndex--;
+				}
+				else
+				{
+					distance += i->getWeight();
+					printAllPathsUtil(i->getV(), d, visited, path, path_index);
+					distance -= i->getWeight();
+				}
 			}
 		}
 	}
@@ -172,11 +197,13 @@ void Graph::ReadDatasFromConsole()
 	for (int i = 0; i < V - 1; i++)
 	{
 		cin >> tempNumber;
-		addEdge(i, i + 1, tempNumber);
+		addEdge(i, i + 1, tempNumber, false);
 	}
 
 	//Number of comps
 	cin >> compNumber;
+	startPointsOfComps = new int[compNumber];
+	finalStartPointsOfComps = new int[compNumber];
 
 	//Store indexes comp city pairs
 	string firstCity = "";
@@ -206,7 +233,7 @@ void Graph::ReadDatasFromConsole()
 		}
 
 		//Comp representation edge
-		addEdge(indexOfFirstCity, indexOfSecondCity, compDis);
+		addEdge(indexOfFirstCity, indexOfSecondCity, compDis, true);
 		//Set the true value in comp list
 		indexOfPairCompCity[indexOfFirstCity][indexOfSecondCity] = true;
 		indexOfPairCompCity[indexOfSecondCity][indexOfFirstCity] = true;
@@ -242,11 +269,13 @@ void Graph::ReadDatasFromFile(string path)
 	for (int i = 0; i < V-1; i++)
 	{
 		infile >> tempNumber;
-		addEdge(i, i + 1, tempNumber);
+		addEdge(i, i + 1, tempNumber, false);
 	}
 
 	//Number of comps
 	infile >> compNumber;
+	startPointsOfComps = new int[compNumber];
+	finalStartPointsOfComps = new int[compNumber];
 
 	//Store indexes comp city pairs
 	string firstCity = "";
@@ -276,7 +305,7 @@ void Graph::ReadDatasFromFile(string path)
 		}
 
 		//Comp representation edge
-		addEdge(indexOfFirstCity, indexOfSecondCity, compDis);
+		addEdge(indexOfFirstCity, indexOfSecondCity, compDis, true);
 		//Set the true value in comp list
 		indexOfPairCompCity[indexOfFirstCity][indexOfSecondCity] = true;
 		indexOfPairCompCity[indexOfSecondCity][indexOfFirstCity] = true;
@@ -290,20 +319,24 @@ void Graph::ReadDatasFromFile(string path)
 
 void Graph::CheckNumberOfCompTravel()
 {
-	compCounter = 0;
-	for (int i = 0; i < bestPathIndex - 1; i++)
-	{
-		if (indexOfPairCompCity[bestPath[i]][bestPath[i + 1]])
-		{
-			compCounter++;
-		}
-	}
+	compCounter = finalCompIndex;
+
 	cout << compCounter << endl;
-	for (int i = 0; i < bestPathIndex - 1; i++)
+	if (compCounter != 0)
 	{
-		if (indexOfPairCompCity[bestPath[i]][bestPath[i + 1]])
+		string secondCity = "";
+		for (int i = 0; i < compCounter; i++)
 		{
-			cout << city[bestPath[i]] << " " << city[bestPath[i + 1]] << endl;
+			if (adj[finalStartPointsOfComps[i]].begin()->getIsItComp())
+			{
+				secondCity = city[adj[finalStartPointsOfComps[i]].begin()->getV()];
+			}
+			else
+			{
+				
+				secondCity = city[(++adj[finalStartPointsOfComps[i]].begin())->getV()];
+			}
+			cout << city[finalStartPointsOfComps[i]] << " " << secondCity << endl;
 		}
 	}
 
