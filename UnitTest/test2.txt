@@ -1,0 +1,12 @@
+6
+Graphiváros
+Graphit
+Graphiháza
+Graphipark
+Graphiújfalu
+Graphivalami
+30 15 60 45 60 10
+2
+Graphiháza Graphipark 30
+Graphipark Graphivalami 25
+300
