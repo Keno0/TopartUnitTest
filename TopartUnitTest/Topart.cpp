@@ -77,6 +77,73 @@ void Graph::Init()
 	}
 }
 
+void Graph::print(vector<size_t> path)
+{
+	distance = 0;
+	for (size_t i = 0; i < distanceArray.size(); i++)
+		distance += distanceArray[i];
+	for (int i = 0; i < path.size(); i++)
+	{
+		cout << path[i] << " ";
+	}
+	cout << "legth: " << distance <<endl;
+	finalPath.push_back(path);
+}
+
+//graph[i][j] stores the j-th neighbour of the node i
+void Graph::dfs(size_t start, size_t end, const vector<vector<size_t> > &graph)
+{
+
+	//initialize:
+	//remember the node (first) and the index of the next neighbour (second)
+	typedef pair<size_t, size_t> State;
+	stack<State> to_do_stack;
+	vector<size_t> path; //remembering the way
+	
+	vector<bool> visited(graph.size(), false); //caching visited - no need for searching in the path-vector 
+	int prevDistance = 0;
+
+											   //start in start!
+	to_do_stack.push(make_pair(start, 0));
+	visited[start] = true;
+	path.push_back(start);
+
+	while (!to_do_stack.empty())
+	{
+		State &current = to_do_stack.top();//current stays on the stack for the time being...
+
+		if (current.first == end || current.second == graph[current.first].size())//goal reached or done with neighbours?
+		{
+			if (current.first == end)
+			{
+				print(path);//found a way!
+				distance = 0;
+			}
+
+							//backtrack:
+			visited[current.first] = false;//no longer considered visited
+			path.pop_back();//go a step back
+			distanceArray.pop_back();
+			to_do_stack.pop();//no need to explore further neighbours         
+		}
+		else {//normal case: explore neighbours
+			size_t next = graph[current.first][current.second];
+			current.second++;//update the next neighbour in the stack!
+			if (!visited[next]) {
+				//putting the neighbour on the todo-list
+				to_do_stack.push(make_pair(next, 0));
+				visited[next] = true;
+				path.push_back(next);
+				list<AdjListNode>::iterator i = adj[current.first].begin();
+				while (i->getV() != next)
+					i++;
+				distanceArray.push_back(i->getWeight());
+				prevDistance = distance;
+			}
+		}
+	}
+}
+
 void Graph::addEdge(int u, int v, int weight, int isItComp)
 {
 	AdjListNode node(v, weight, isItComp);
@@ -88,6 +155,7 @@ void Graph::printAllPaths(int s, int d)
 {
 	// Mark all the vertices as not visited
 	bool *visited = new bool[V];
+	vector < vector<size_t>> graph;
 
 	// Create an array to store paths
 	int *path = new int[V];
@@ -96,8 +164,21 @@ void Graph::printAllPaths(int s, int d)
 						// Initialize all vertices as not visited
 	for (int i = 0; i < V; i++)
 		visited[i] = false;
-
+	graph.resize(V);
+	for (int j = 0; j < V; j++)
+	{
+		list<AdjListNode>::iterator i;
+		int k = 0;
+		graph[j].resize(V);
+		for (i = adj[j].begin(); i != adj[j].end(); ++i)
+		{
+			graph[j][k] = i->getV();
+			k++;
+		}
+	}
 	// Call the recursive helper function to print all paths
+
+		dfs(s, d, graph);
 	printAllPathsUtil(s, d, visited,
 		path, path_index);
 }

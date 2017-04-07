@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 #define NINF INT_MIN
-#define READ_DATA_FROM_FILE 0
+#define READ_DATA_FROM_FILE 1
 using namespace std;
 
 // Graph is represented using adjacency list. Every node of adjacency list
@@ -53,6 +53,8 @@ public:
 	int finalCompIndex = 0;
 	int *startPointsOfComps;
 	int *finalStartPointsOfComps;
+	vector<size_t> distanceArray;
+	list < vector<size_t>> finalPath;
 	int V; // No. of vertices’
 
 				  // function to add an edge to graph
@@ -60,7 +62,8 @@ public:
 
 	// Finds longest distances from given source vertex
 	void printAllPaths(int s, int d);
-
+	void Graph::dfs(size_t, size_t, const vector<vector<size_t> > &);
+	void Graph::print(vector<size_t>);
 	void PrintBestPathEndDistance();
 	void ReadDatasFromConsole();
 	void ReadDatasFromFile(string path);
