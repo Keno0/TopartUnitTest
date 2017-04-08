@@ -221,10 +221,10 @@ void Graph::ReadDatasFromFile(string path)
 	city[V - 1] = city[0];
 
 	//Read distance of cities
-	int *distanceArray = new int[V];
+	int *tempdistanceArray = new int[V];
 	for (int i = 0; i < V - 1; i++)
 	{
-		infile >> distanceArray[i];		
+		infile >> tempdistanceArray[i];
 	}
 
 	//Number of comps
@@ -233,11 +233,16 @@ void Graph::ReadDatasFromFile(string path)
 	//Number of points in graph
 	modifiedV =V + compNumber;
 	adj = new list<AdjListNode>[modifiedV]; //The graph
+	distanceArray = new int[modifiedV];
+	for (int i = 0; i < V - 1; i++)
+	{
+		distanceArray[i]= tempdistanceArray[i];
+	}
 	
 	//Store the edge between cities
 	for (int i = 0; i < V - 1; i++)
 	{
-		addEdge(i, i + 1, distanceArray[i], false);
+		addEdge(i, i + 1, tempdistanceArray[i], false);
 	}
 
 	//Store edges comp city pairs
@@ -249,11 +254,12 @@ void Graph::ReadDatasFromFile(string path)
 	int tempV = V - 1;
 	for (int i = 0; i < compNumber; i++)
 	{
+		tempV++;
 		//store comp data line by line
 		infile >> firstCity;
 		infile >> secondCity;
-		infile >> compDis;
-		tempV++;
+		infile >> distanceArray[tempV];
+		
 		
 		//Find comp city index
 		for (int i = 0; i < V-1; i++)
@@ -270,7 +276,7 @@ void Graph::ReadDatasFromFile(string path)
 		}
 
 		//Comp representation edge
-		addEdge(indexOfFirstCity, tempV, compDis, true);
+		addEdge(indexOfFirstCity, tempV, distanceArray[tempV], true);
 		addEdge(tempV, indexOfSecondCity, 0, true);
 
 	}
@@ -291,7 +297,7 @@ void Graph::CheckNumberOfCompTravel()
 	for (list < vector<size_t>>::iterator i=finalPath.begin(); i != finalPath.end(); i++)
 	{
 	
-		for (size_t j = 0; j < i->size()-1; j++)
+		/*for (size_t j = 0; j < i->size()-1; j++)
 		{
 			for (list<AdjListNode>::iterator k = adj[i->at(j)].begin(); k != adj[i->at(j)].end(); k++)
 			{
@@ -300,6 +306,14 @@ void Graph::CheckNumberOfCompTravel()
 					tempDistance += k->getWeight();
 				}
 			}
+		}*/
+
+		for (size_t j = 0; j < i->size() - 1; j++)
+		{
+			if (tempDistance > maxDistance)
+				break;
+			else
+				tempDistance += distanceArray[i->at(j)];
 		}
 
 		if (tempDistance <= maxDistance)

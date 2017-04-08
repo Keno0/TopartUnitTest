@@ -30,6 +30,7 @@ class Graph
 	int maxDistance = 0;
 	int numberOfCity = 0;	
 	int compNumber = 0;
+	int *distanceArray;
 	string *city;
 	// Pointer to an array containing adjacency lists
 	list<AdjListNode> *adj;
