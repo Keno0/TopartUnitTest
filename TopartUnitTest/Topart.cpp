@@ -152,7 +152,7 @@ void Graph::ReadDatasFromConsole()
 	modifiedV = V + compNumber;
 	adj = new list<AdjListNode>[modifiedV]; //The graph
 
-	//Store the edge between cities
+											//Store the edge between cities
 	for (int i = 0; i < V - 1; i++)
 	{
 		addEdge(i, i + 1, distanceArray[i], false);
@@ -174,7 +174,7 @@ void Graph::ReadDatasFromConsole()
 		tempV++;
 
 		//Find comp city index
-		for (int i = 0; i < V; i++)
+		for (int i = 0; i < V - 1; i++)
 		{
 			if (city[i].compare(firstCity) == 0)
 			{
@@ -256,7 +256,7 @@ void Graph::ReadDatasFromFile(string path)
 		tempV++;
 		
 		//Find comp city index
-		for (int i = 0; i < V; i++)
+		for (int i = 0; i < V-1; i++)
 		{
 			if (city[i].compare(firstCity) == 0)
 			{
@@ -313,6 +313,7 @@ void Graph::CheckNumberOfCompTravel()
 
 		tempDistance = 0;
 	}
+
 
 	for (int i = 0; i < bestPath->size(); i++)
 	{
