@@ -43,7 +43,7 @@ public:
 
 	// Finds longest distances from given source vertex
 	void printAllPaths(int s, int d);
-	void Graph::dfs(size_t, size_t, const vector<vector<size_t> > &);
+	void dfs(size_t, size_t, const vector<vector<size_t> > &);
 	void ReadDatasFromConsole();
 	void ReadDatasFromFile(string path);
 	void CheckNumberOfCompTravel();
