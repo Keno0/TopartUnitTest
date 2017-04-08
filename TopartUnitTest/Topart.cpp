@@ -2,10 +2,8 @@
 #include <iostream>
 #include <list>
 #include <stack>
-#include <limits.h>
 #include <string>
 #include <fstream>
-#include <map>
 #include <vector>
 #include "Topart.h"
 
@@ -33,19 +31,6 @@ int AdjListNode::getWeight()
 }
 
 
-void Graph::PrintBestPathEndDistance()
-{
-	cout << "Best distance: " << bestDistance << endl;
-	cout << "Best Path: ";
-	for (int i = 0; i < bestPathIndex; i++)
-	{
-		cout << bestPath[i] << " ";
-	}
-	cout << endl;
-}
-
-
-
 void Graph::StartProgram(string path)
 {
 #if READ_DATA_FROM_FILE
@@ -54,40 +39,8 @@ void Graph::StartProgram(string path)
 	ReadDatasFromConsole();
 #endif
 
-	printAllPaths(0, V - 1);
+	printAllPaths(0, numberOfCity);
 	CheckNumberOfCompTravel();
-}
-
-void Graph::Init()
-{
-	city = new string[V];
-	adj = new list<AdjListNode>[V];
-	indexOfPairCompCity = new bool*[V];
-	for (int i = 0; i < V; i++)
-	{
-		indexOfPairCompCity[i] = new bool[V];
-	}
-
-	for (int i = 0; i < V; i++)
-	{
-		for (int j = 0; j < V; j++)
-		{
-			indexOfPairCompCity[i][j] = false;
-		}
-	}
-}
-
-void Graph::print(vector<size_t> path)
-{
-	distance = 0;
-	for (size_t i = 0; i < distanceArray.size(); i++)
-		distance += distanceArray[i];
-	for (int i = 0; i < path.size(); i++)
-	{
-		cout << path[i] << " ";
-	}
-	cout << "legth: " << distance <<endl;
-	finalPath.push_back(path);
 }
 
 //graph[i][j] stores the j-th neighbour of the node i
@@ -101,7 +54,6 @@ void Graph::dfs(size_t start, size_t end, const vector<vector<size_t> > &graph)
 	vector<size_t> path; //remembering the way
 	
 	vector<bool> visited(graph.size(), false); //caching visited - no need for searching in the path-vector 
-	int prevDistance = 0;
 
 											   //start in start!
 	to_do_stack.push(make_pair(start, 0));
@@ -116,14 +68,12 @@ void Graph::dfs(size_t start, size_t end, const vector<vector<size_t> > &graph)
 		{
 			if (current.first == end)
 			{
-				print(path);//found a way!
-				distance = 0;
+				finalPath.push_back(path);//found a way!
 			}
 
 							//backtrack:
 			visited[current.first] = false;//no longer considered visited
 			path.pop_back();//go a step back
-			distanceArray.pop_back();
 			to_do_stack.pop();//no need to explore further neighbours         
 		}
 		else {//normal case: explore neighbours
@@ -134,11 +84,6 @@ void Graph::dfs(size_t start, size_t end, const vector<vector<size_t> > &graph)
 				to_do_stack.push(make_pair(next, 0));
 				visited[next] = true;
 				path.push_back(next);
-				list<AdjListNode>::iterator i = adj[current.first].begin();
-				while (i->getV() != next)
-					i++;
-				distanceArray.push_back(i->getWeight());
-				prevDistance = distance;
 			}
 		}
 	}
@@ -153,120 +98,40 @@ void Graph::addEdge(int u, int v, int weight, int isItComp)
 // Prints all paths from 's' to 'd'
 void Graph::printAllPaths(int s, int d)
 {
-	// Mark all the vertices as not visited
-	bool *visited = new bool[V];
+	//Store the grapth in vector to handle easier
 	vector < vector<size_t>> graph;
 
-	// Create an array to store paths
-	int *path = new int[V];
-	int path_index = 0; // Initialize path[] as empty
-
-						// Initialize all vertices as not visited
-	for (int i = 0; i < V; i++)
-		visited[i] = false;
 	graph.resize(V);
 	for (int j = 0; j < V; j++)
 	{
 		list<AdjListNode>::iterator i;
 		int k = 0;
-		graph[j].resize(V);
+		graph[j].resize(adj[j].size());
 		for (i = adj[j].begin(); i != adj[j].end(); ++i)
 		{
 			graph[j][k] = i->getV();
 			k++;
 		}
 	}
-	// Call the recursive helper function to print all paths
-
-		dfs(s, d, graph);
-	printAllPathsUtil(s, d, visited,
-		path, path_index);
+	// Call the non recursive helper function to find all paths
+	dfs(s, d, graph);
 }
 
-
-
-// A recursive function to print all paths from 'u' to 'd'.
-// visited[] keeps track of vertices in current path.
-// path[] stores actual vertices and path_index is current
-// index in path[]
-void Graph::printAllPathsUtil(int u, int d, bool visited[],
-	int path[], int &path_index)
+void Graph::ReadDatasFromConsole() 
 {
-	// Mark the current node and store it in path[]
-	visited[u] = true;
-	path[path_index] = u;
-	path_index++;
 
-	// If current vertex is same as destination, then print
-	// current path[]
-	if (u == d)
-	{
-		if (distance > bestDistance && distance <= maxDistance)
-		{
-			bestDistance = distance;
-			bestPathIndex = path_index;
-			for (int i = 0; i < path_index; i++)
-			{
-				bestPath[i] = path[i];
-			}
+	int tempNumber = 0;
+	int modifiedV = 0; // A városok plusz kompok száma
 
-			finalCompIndex = compIndex;
-			for (int i = 0; i < finalCompIndex; i++)
-			{
-				finalStartPointsOfComps[i] = startPointsOfComps[i];
-			}
-		}
-
-		
-	}
-	else // If current vertex is not destination
-	{
-		// Recur for all the vertices adjacent to current vertex
-		list<AdjListNode>::iterator i;
-
-		for (i = adj[u].begin(); i != adj[u].end(); ++i)
-		{
-			if (!visited[i->getV()])
-			{
-				if (i->getIsItComp())
-				{
-					startPointsOfComps[compIndex] = u;
-					compIndex++;
-					distance += i->getWeight();
-					printAllPathsUtil(i->getV(), d, visited, path, path_index);
-					distance -= i->getWeight();
-					compIndex--;
-				}
-				else
-				{
-					distance += i->getWeight();
-					printAllPathsUtil(i->getV(), d, visited, path, path_index);
-					distance -= i->getWeight();
-				}
-			}
-		}
-	}
-
-	// Remove current vertex from path[] and mark it as unvisited
-
-	path_index--;
-	visited[u] = false;
-}
-
-
-
-
-void Graph::ReadDatasFromConsole()
-{
 	//Read the number of cities
 	cin >> V;
+	numberOfCity = V;
 
 	//Increase because the endpoint is the first city
 	V++;
 
-	Init();
-
 	//Read name of cities
+	city = new string[V];
 	for (int i = 0; i < V - 1; i++)
 	{
 		cin >> city[i];
@@ -274,32 +139,41 @@ void Graph::ReadDatasFromConsole()
 	city[V - 1] = city[0];
 
 	//Read distance of cities
-	int tempNumber = 0;
+	int *distanceArray = new int[V];
 	for (int i = 0; i < V - 1; i++)
 	{
-		cin >> tempNumber;
-		addEdge(i, i + 1, tempNumber, false);
+		cin >> distanceArray[i];
 	}
 
 	//Number of comps
 	cin >> compNumber;
-	startPointsOfComps = new int[compNumber];
-	finalStartPointsOfComps = new int[compNumber];
 
-	//Store indexes comp city pairs
+	//Number of points in graph
+	modifiedV = V + compNumber;
+	adj = new list<AdjListNode>[modifiedV]; //The graph
+
+	//Store the edge between cities
+	for (int i = 0; i < V - 1; i++)
+	{
+		addEdge(i, i + 1, distanceArray[i], false);
+	}
+
+	//Store edges comp city pairs
 	string firstCity = "";
 	string secondCity = "";
 	int indexOfFirstCity = 0;
 	int indexOfSecondCity = 0;
 	int compDis = 0;
+	int tempV = V - 1;
 	for (int i = 0; i < compNumber; i++)
 	{
 		//store comp data line by line
 		cin >> firstCity;
 		cin >> secondCity;
 		cin >> compDis;
+		tempV++;
 
-		//Finc comp city index
+		//Find comp city index
 		for (int i = 0; i < V; i++)
 		{
 			if (city[i].compare(firstCity) == 0)
@@ -314,15 +188,14 @@ void Graph::ReadDatasFromConsole()
 		}
 
 		//Comp representation edge
-		addEdge(indexOfFirstCity, indexOfSecondCity, compDis, true);
-		//Set the true value in comp list
-		indexOfPairCompCity[indexOfFirstCity][indexOfSecondCity] = true;
-		indexOfPairCompCity[indexOfSecondCity][indexOfFirstCity] = true;
+		addEdge(indexOfFirstCity, tempV, compDis, true);
+		addEdge(tempV, indexOfSecondCity, 0, true);
 
 	}
 
 	//Store max distance
 	cin >> maxDistance;
+	V = modifiedV;
 }
 
 void Graph::ReadDatasFromFile(string path)
@@ -330,16 +203,17 @@ void Graph::ReadDatasFromFile(string path)
 	ifstream infile;
 	infile.open(path);
 	int tempNumber = 0;
+	int modifiedV = 0; // A városok plusz kompok száma
 	
 	//Read the number of cities
 	infile >> V;
+	numberOfCity = V;
 
 	//Increase because the endpoint is the first city
 	V++;
 
-	Init();	
-
 	//Read name of cities
+	city = new string[V];
 	for (int i = 0; i < V - 1; i++)
 	{
 		infile >> city[i];
@@ -347,31 +221,41 @@ void Graph::ReadDatasFromFile(string path)
 	city[V - 1] = city[0];
 
 	//Read distance of cities
-	for (int i = 0; i < V-1; i++)
+	int *distanceArray = new int[V];
+	for (int i = 0; i < V - 1; i++)
 	{
-		infile >> tempNumber;
-		addEdge(i, i + 1, tempNumber, false);
+		infile >> distanceArray[i];		
 	}
 
 	//Number of comps
 	infile >> compNumber;
-	startPointsOfComps = new int[compNumber];
-	finalStartPointsOfComps = new int[compNumber];
 
-	//Store indexes comp city pairs
+	//Number of points in graph
+	modifiedV =V + compNumber;
+	adj = new list<AdjListNode>[modifiedV]; //The graph
+	
+	//Store the edge between cities
+	for (int i = 0; i < V - 1; i++)
+	{
+		addEdge(i, i + 1, distanceArray[i], false);
+	}
+
+	//Store edges comp city pairs
 	string firstCity = "";
 	string secondCity = "";
 	int indexOfFirstCity = 0;
 	int indexOfSecondCity = 0;
 	int compDis = 0;
+	int tempV = V - 1;
 	for (int i = 0; i < compNumber; i++)
 	{
 		//store comp data line by line
 		infile >> firstCity;
 		infile >> secondCity;
 		infile >> compDis;
+		tempV++;
 		
-		//Finc comp city index
+		//Find comp city index
 		for (int i = 0; i < V; i++)
 		{
 			if (city[i].compare(firstCity) == 0)
@@ -386,39 +270,65 @@ void Graph::ReadDatasFromFile(string path)
 		}
 
 		//Comp representation edge
-		addEdge(indexOfFirstCity, indexOfSecondCity, compDis, true);
-		//Set the true value in comp list
-		indexOfPairCompCity[indexOfFirstCity][indexOfSecondCity] = true;
-		indexOfPairCompCity[indexOfSecondCity][indexOfFirstCity] = true;
+		addEdge(indexOfFirstCity, tempV, compDis, true);
+		addEdge(tempV, indexOfSecondCity, 0, true);
 
 	}
 
 	//Store max distance
 	infile >> maxDistance;
+	V = modifiedV;
 	infile.close();
 }
 
 void Graph::CheckNumberOfCompTravel()
 {
-	compCounter = finalCompIndex;
-
-	cout << compCounter << endl;
-	if (compCounter != 0)
+	int tempDistance = 0;
+	int distance = 0;
+	compCounter = 0;
+	list < vector<size_t>>::iterator bestPath;
+	
+	for (list < vector<size_t>>::iterator i=finalPath.begin(); i != finalPath.end(); i++)
 	{
-		string secondCity = "";
-		for (int i = 0; i < compCounter; i++)
+	
+		for (size_t j = 0; j < i->size()-1; j++)
 		{
-			if (adj[finalStartPointsOfComps[i]].begin()->getIsItComp())
+			for (list<AdjListNode>::iterator k = adj[i->at(j)].begin(); k != adj[i->at(j)].end(); k++)
 			{
-				secondCity = city[adj[finalStartPointsOfComps[i]].begin()->getV()];
+				if (k->getV() == i->at(j+1))
+				{
+					tempDistance += k->getWeight();
+				}
 			}
-			else
+		}
+
+		if (tempDistance <= maxDistance)
+		{
+			if (tempDistance > distance)
 			{
-				
-				secondCity = city[(++adj[finalStartPointsOfComps[i]].begin())->getV()];
+				distance = tempDistance;
+				bestPath = i;
 			}
-			cout << city[finalStartPointsOfComps[i]] << " " << secondCity << endl;
+		}
+
+		tempDistance = 0;
+	}
+
+	for (int i = 0; i < bestPath->size(); i++)
+	{
+		if (bestPath->at(i) > numberOfCity )
+		{
+			compCounter++;
 		}
 	}
 
+	cout << compCounter << endl;
+
+	for (int i = 0; i < bestPath->size(); i++)
+	{
+		if (bestPath->at(i) > numberOfCity )
+		{
+			cout << city[bestPath->at(i - 1)] << " "<< city[bestPath->at(i +1)] << endl;
+		}
+	}
 }

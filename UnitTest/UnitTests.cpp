@@ -20,13 +20,6 @@ TEST(Result, CompCounter2)
 	ASSERT_EQ(0, g.compCounter);
 }
 
-TEST(creatingHighVertex, highVertex)
-{
-	Graph g;
-	g.V = 10000;
-	g.Init();
-	ASSERT_TRUE(true);
-}
 #endif
 int main(int argc, char* argv[])
 {

@@ -45,3 +45,30 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+*.suo
+*.ilk
+*.exe
+*.testdurations
+*.pdb
+*.ipch
+*.autopkg
+*.xml
+*.targets
+*.lib
+*.dll
+packages/googletest.1.8.0.0/build/native/include/gtest/gtest-death-test.h
+packages/googletest.1.8.0.0/build/native/include/gtest/gtest-message.h
+packages/googletest.1.8.0.0/build/native/include/gtest/gtest-test-part.h
+*.nupkg
+*.db
+*.obj
+*.tlog
+*.log
+*.zip
+*.vcxproj
+*.sln
+*.opendb
+*.enc
+*.idb
+*.config
+*.filters
